@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import math
 
 class info(commands.Cog):
 	def __init__(self, bot):
@@ -9,9 +8,7 @@ class info(commands.Cog):
 	
 	@commands.command()
 	async def info(self, ctx):
-		await ctx.send(f"Currently in {len(self.bot.guilds)}")
-		
-
+		await ctx.send(f"Currently serving {len(self.bot.guilds)}!")
 
 def setup(bot):
 	bot.add_cog(info(bot))

@@ -30,7 +30,7 @@ class mute(commands.Cog):
 				role = discord.utils.get(guild.roles, name="Muted")
 				if role in member.roles:
 					await member.remove_roles(role)
-					print(f"Unmuted: {member.display_name}")
+					print(f"Unmuted: {member.display_name}.")
 
 				await self.bot.mutes.delete(member.id)
 				try:
@@ -44,19 +44,19 @@ class mute(commands.Cog):
 
 	@commands.command(
 		name='mute',
-		description="Mutes a given user for x time!",
-		ussage='<user> [time]'
+		description="Mutes a given user forever unless a time is specified.",
+		usage='<user> [time, if applicable]'
 	)
 	@commands.has_permissions(manage_roles=True)
 	async def mute(self, ctx, member: discord.Member, *, time: TimeConverter=None):
 		role = discord.utils.get(ctx.guild.roles, name="Muted")
 		if not role:
-			await ctx.send("No muted role was found! Please create one called `Muted`")
+			await ctx.send("No muted role was found! Please create one called `Muted`.")
 			return
 
 		try:
 			if self.bot.muted_users[member.id]:
-				await ctx.send("This user is already muted")
+				await ctx.send("This user is already muted!")
 				return
 		except KeyError:
 			pass
@@ -80,21 +80,21 @@ class mute(commands.Cog):
 			hours, minutes = divmod(minutes, 60)
 			if int(hours):
 				await ctx.send(
-					f"Muted {member.display_name} for {hours} hours, {minutes} minutes and {seconds} seconds"
+					f"Muted {member.display_name} for {hours} hours, {minutes} minutes and {seconds} seconds."
 				)
 			elif int(minutes):
 				await ctx.send(
-					f"Muted {member.display_name} for {minutes} minutes and {seconds} seconds"
+					f"Muted {member.display_name} for {minutes} minutes and {seconds} seconds."
 				)
 			elif int(seconds):
-				await ctx.send(f"Muted {member.display_name} for {seconds} seconds")
+				await ctx.send(f"Muted {member.display_name} for {seconds} seconds.")
 
 		if time and time < 300:
 			await asyncio.sleep(time)
 
 			if role in member.roles:
 				await member.remove_roles(role)
-				await ctx.send(f"Unmuted `{member.display_name}`")
+				await ctx.send(f"Unmuted `{member.display_name}`.")
 
 			await self.bot.mutes.delete(member.id)
 			try:
