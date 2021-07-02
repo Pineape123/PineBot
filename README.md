@@ -1,0 +1,4 @@
+# What is Pinebot?
+Pinebot is a mod bot for your Discord server needs! It was mostly created for the [Stock Market Bot support server](discord.gg/K3tUKAV) to replace Dyno and make a in-house solution that we can alter to our needs. It's still in development but features are bein' refined and added constantly. It has basically all of the features that the big bois have but we're addin' more. Since it's our own solution, we can really refine it to meet our needs. It's written in Py and uses dpy, we're currently using json files as a form of db.
+# How can I contribute?
+Ez, just do ur changes and send a PR. Hopefully it's accepted and doesn't break the damn thing.
