@@ -1,4 +1,5 @@
-
+from cogs.mute import mute
+from cogs.bane import bane
 import discord
 from discord.ext import commands
 import json
@@ -23,7 +24,7 @@ class warning(commands.Cog):
 
 			with open('./warns.json', 'w') as f: 
 				json.dump(warns, f, indent=4)
-				await ctx.send(f'{user} Warned for: {reason}') 
+				await ctx.send(f'{user} Warned for: {reason}.') 
 
 	@commands.command(Administrator=True, aliases=['dw'] )
 	async def delwarn(self, ctx, user:discord.User, warnId:int): 
@@ -40,13 +41,11 @@ class warning(commands.Cog):
 			try:
 				del warns[str(ctx.guild.id)][str(user.id)][warnId - 1]
 			except:
-				return await ctx.send("Invalid warnId")
+				return await ctx.send("Invalid warning ID given, please check the ID and try again.")
 			else:
 				await ctx.send(f"Warn `{warnId}` has been removed.")
 				with open('./warns.json', 'w') as f: 
 					json.dump(warns, f, indent=4)
-
-###################################################################
 	
 	@commands.command(Administrator=True, aliases=['warnings'])
 	async def warns(self, ctx, user:discord.User): 
@@ -64,16 +63,14 @@ class warning(commands.Cog):
 			userwarnlist = warns[str(ctx.guild.id)][str(user.id)]
 			numWarns = 0
 			
-			embed=discord.Embed(title=f"Warns", description="Someones bad", color=0xea0006)
+			embed=discord.Embed(title=f"Warns", description="Someone's bad...", color=0xea0006)
 			embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
 
 			for userwarn in userwarnlist:
 				if numWarns != 25:
 					numWarns += 1 
 					embed.add_field(name="\uFEFF", value=str(numWarns) + '. ' + userwarn , inline=False)
-
 			await ctx.send(embed=embed)
-
 
 def setup(bot):
 	bot.add_cog(warning(bot))
