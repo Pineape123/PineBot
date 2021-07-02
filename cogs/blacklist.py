@@ -9,7 +9,7 @@ class blacklist(commands.Cog):
 	async def on_message(message):
 		pass
 
-	@commands.command(Adminstrator=True, aliases=['vbl', 'viewblacklist'])
+	@commands.command(Adminstrator=True, aliases=['vbl'])
 	async def viewBlacklist(self, ctx):
 		with open('/blacklist.json', 'r') as f:
 			blacklist = json.load(f)
