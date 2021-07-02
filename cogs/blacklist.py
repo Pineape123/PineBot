@@ -9,7 +9,7 @@ class blacklist(commands.Cog):
 	async def on_message(message):
 		pass
 
-	@commands.command(Adminstrator=True, aliases=['vbl'])
+	@commands.command(Adminstrator=True, aliases=['vbl', 'viewblacklist'])
 	async def viewBlacklist(self, ctx):
 		with open('/blacklist.json', 'r') as f:
 			blacklist = json.load(f)
@@ -21,7 +21,7 @@ class blacklist(commands.Cog):
 
 			await ctx.send(f"The blacklist contains: {blstring}")
 
-	@commands.command(Adminstrator=True, aliases=['bl'])
+	@commands.command(Adminstrator=True, aliases=['bl', 'blacklist'])
 	async def blacklist(self, ctx, word):
 		with open('./blacklist.json', 'r') as f:
 			blacklist = json.load(f)
@@ -30,7 +30,7 @@ class blacklist(commands.Cog):
 				blacklist[str(ctx.guild.id)] = []
 
 			if word in blacklist[str(ctx.guild.id)]:
-				return await ctx.send(f"`{word}` is already in the blacklist!")
+				return await ctx.send(f"Dw, `{word}` is already in the blacklist!")
 
 			blacklist[str(ctx.guild.id)].append(word)
 
@@ -52,7 +52,7 @@ class blacklist(commands.Cog):
 			try:
 				blacklist[str(ctx.guild.id)].remove(word)
 			except:
-				await ctx.send("Something went wrong.")
+				await ctx.send("We're sorry but something went wrong. Please try again or contact the owner of the bot.")
 			else:
 				with open('./blacklist.json', 'w') as f:
 					json.dump(blacklist, f, indent=4)
