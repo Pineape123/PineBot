@@ -5,13 +5,13 @@ class blacklist(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.listener()
+	@commands.Cog.listener()
 	async def on_message(message):
 		pass
 
 	@commands.command(Adminstrator=True, aliases=['vbl'])
 	async def viewBlacklist(self, ctx):
-		with open('/blacklist.json', 'r') as f:
+		with open('./blacklist.json', 'r') as f:
 			blacklist = json.load(f)
 
 			if not str(ctx.guild.id) in blacklist:
@@ -57,3 +57,5 @@ class blacklist(commands.Cog):
 				with open('./blacklist.json', 'w') as f:
 					json.dump(blacklist, f, indent=4)
 					await ctx.send(f'`{word}`` has been removed from the blacklist.')
+def setup(bot):
+	bot.add_cog(blacklist(bot))
