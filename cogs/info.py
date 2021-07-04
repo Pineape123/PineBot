@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
-
+import os
+import psutil
+import math
 class info(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
@@ -8,7 +10,15 @@ class info(commands.Cog):
 	
 	@commands.command()
 	async def info(self, ctx):
-		await ctx.send(f"Currently serving {len(self.bot.guilds)}!")
+		pid = os.getpid()
+		python_process = psutil.Process(pid)
+		embed=discord.Embed(title="__**Info**__", color=0x53e3d1)
+		embed.add_field(name="Current Guilds:", value=f"Currently in {len(self.bot.guilds)} servers!", inline=False)
+		embed.add_field(name="Latency:", value=f"{round(self.bot.latency * 1000)}ms", inline=True)
+		embed.add_field(name="CPU Usage:", value=f"CPU usage: {psutil.cpu_percent()}%", inline=False)
+		embed.add_field(name="Memory Usage:", value=f"Memory usage: {str(round(psutil.virtual_memory().available, 2))} / {str(round(psutil.virtual_memory().total, 2))}GB", inline=False)
+		embed.set_footer(text="PineBot")
+		await ctx.send(embed=embed)
 
 def setup(bot):
 	bot.add_cog(info(bot))
