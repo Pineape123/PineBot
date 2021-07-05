@@ -15,8 +15,9 @@ class info(commands.Cog):
 		embed=discord.Embed(title="__**Info**__", color=0x53e3d1)
 		embed.add_field(name="Current Guilds:", value=f"Currently in {len(self.bot.guilds)} servers!", inline=False)
 		embed.add_field(name="Latency:", value=f"{round(self.bot.latency * 1000)}ms", inline=True)
-		embed.add_field(name="CPU Usage:", value=f"CPU usage: {psutil.cpu_percent()}%", inline=False)
-		embed.add_field(name="Memory Usage:", value=f"Memory usage: {str(round(psutil.virtual_memory().available, 2))} / {str(round(psutil.virtual_memory().total, 2))}GB", inline=False)
+		embed.add_field(name="CPU Usage:", value=f"{psutil.cpu_percent()}%", inline=False)
+		embed.add_field(name="Memory Usage:", value=f"{str(round(psutil.virtual_memory().available * 0.000000001, 2))} / {str(round(psutil.virtual_memory().total *0.000000001, 2))} GB", inline=False)
+		embed.add_field(name="Shards Online:", value=f"1/1", inline=False)
 		embed.set_footer(text="PineBot")
 		await ctx.send(embed=embed)
 
