@@ -1,5 +1,4 @@
-from cogs.mute import mute
-from cogs.bane import bane
+
 import discord
 from discord.ext import commands
 import json
@@ -63,7 +62,7 @@ class warning(commands.Cog):
 			userwarnlist = warns[str(ctx.guild.id)][str(user.id)]
 			numWarns = 0
 			
-			embed=discord.Embed(title=f"Warns", description="Someone's bad...", color=0xea0006)
+			embed=discord.Embed(title=f"Warns", color=0xea0006)
 			embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
 
 			for userwarn in userwarnlist:

@@ -9,7 +9,7 @@ class bane(commands.Cog):
 	async def bane(self, ctx, user=None):
 		if not user:
 			user = ctx.author.mention
-		embed=discord.Embed(description=f"{user} was bannned!")
+		embed=discord.Embed(description=f"{user} was bannned!", color=0xff0000)
 		await ctx.send(embed=embed)
 
 def setup(bot):
