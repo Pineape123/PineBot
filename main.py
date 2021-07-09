@@ -7,13 +7,14 @@ def get_prefix(bot, message):
 		prefixes = json.load(f) 
 		return prefixes[str(message.guild.id)]
 
-bot = commands.AutoShardedBot(command_prefix = get_prefix, activity=discord.Activity(type=discord.ActivityType.watching, name="Watching _ servers!"), shard_count=1)
+bot = commands.AutoShardedBot(command_prefix = get_prefix, shard_count=1)
+#########################
 
+###########################
 from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-
-
+##########################
 @bot.event
 async def on_guild_join(guild):
     with open('prefixes.json', 'r') as f: 
@@ -56,5 +57,5 @@ async def unload(ctx, extension):
 	bot.unload_extension(f'cogs.{extension}') 
 	await ctx.send(f'Unloaded "{extension}".')
 	print(f'Unloaded "{extension}".')
-
+################333
 bot.run(TOKEN)

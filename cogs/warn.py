@@ -23,7 +23,9 @@ class warning(commands.Cog):
 
 			with open('./warns.json', 'w') as f: 
 				json.dump(warns, f, indent=4)
-				await ctx.send(f'{user} Warned for: {reason}.') 
+				embed=discord.Embed(description=f"{user} Warned for: {reason}",color=0x06c258)
+				embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
+				await ctx.send(embed=embed)
 
 	@commands.command(Administrator=True, aliases=['dw'] )
 	async def delwarn(self, ctx, user:discord.User, warnId:int): 
@@ -62,7 +64,7 @@ class warning(commands.Cog):
 			userwarnlist = warns[str(ctx.guild.id)][str(user.id)]
 			numWarns = 0
 			
-			embed=discord.Embed(title=f"Warns", color=0xea0006)
+			embed=discord.Embed(title=f"Warns", color=0x06c258)
 			embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
 
 			for userwarn in userwarnlist:
