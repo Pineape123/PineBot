@@ -1,13 +1,16 @@
 import discord
 from discord.ext import commands
 import os, json
+from db import Database
+# db.cool()
+Database.init()
 
 def get_prefix(bot, message): 
 	with open('prefixes.json', 'r') as f:
 		prefixes = json.load(f) 
 		return prefixes[str(message.guild.id)]
 
-bot = commands.AutoShardedBot(command_prefix = get_prefix, shard_count=1)
+bot = commands.AutoShardedBot(command_prefix = get_prefix, shard_count=1, case_insensitive=True, help_command=None)
 #########################
 
 ###########################

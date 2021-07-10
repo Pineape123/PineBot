@@ -1,8 +1,20 @@
 
 import discord
+from db import Database
 from discord.ext import commands
-import json
 
+warnstructure = {
+	'_id': "jsdafhadsjkfhsdasfgjjd", # Internal MONGODB
+	'guild_id': 23984237842,
+	'warn_data': {
+		'23432424343242':[ # userid
+			{
+				'author_id': 782462384263462,
+				'reason': "TRASH"
+			}
+		]
+	}
+}
 
 class warning(commands.Cog):
 	def __init__(self, bot):
@@ -10,68 +22,86 @@ class warning(commands.Cog):
 
 	@commands.command(Administrator=True, aliases=['w'])
 	async def warn(self, ctx, user:discord.User, *, reason): 
-		with open('./warns.json', 'r') as f:
-			warns = json.load(f)
+		warns = Database.find('warns', {'guild_id': ctx.guild.id})
 
-			if not str(ctx.guild.id) in warns:
-				warns[str(ctx.guild.id)] = {}
+		if not warns:
+			warns = {
+				'guild_id': ctx.guild.id,
+				'warn_data': {}
+			}
+			result = Database.insert('warns', warns)
+			warns = Database.find('warns', {'_id':result.inserted_id})
 
-			if not str(user.id) in warns[str(ctx.guild.id)].keys():
-				warns[str(ctx.guild.id)][str(user.id)] = []
+		if not str(user.id) in warns['warn_data'].keys():
+			warns['warn_data'][str(user.id)] = []
 
-			warns[str(ctx.guild.id)][str(user.id)].append(reason)
+		warns['warn_data'][str(user.id)].append({
+			'author_id': ctx.author.id,
+			'reason': reason
+		})
 
-			with open('./warns.json', 'w') as f: 
-				json.dump(warns, f, indent=4)
-				embed=discord.Embed(description=f"{user} Warned for: {reason}",color=0x06c258)
-				embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
-				await ctx.send(embed=embed)
+		Database.update('warns', {'guild_id':ctx.guild.id}, {'$set': {'warn_data': warns['warn_data']}})
 
-	@commands.command(Administrator=True, aliases=['dw'] )
-	async def delwarn(self, ctx, user:discord.User, warnId:int): 
-		with open('./warns.json', 'r') as f:
-			warns = json.load(f)
+		embed=discord.Embed(description=f"{user} Warned for: {reason}",color=0x06c258)
+		embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
+		await ctx.send(embed=embed)
 
-			if not str(ctx.guild.id) in warns:
-				warns[str(ctx.guild.id)] = {}
+	# @commands.command(Administrator=True, aliases=['dw'] )
+	# async def delwarn(self, ctx, user:discord.User, warnId:int): 
+	# 	# with open('./warns.json', 'r') as f:
+	# 	# 	warns = json.load(f)
 
-			if not str(user.id) in warns[str(ctx.guild.id)].keys():
-				warns[str(ctx.guild.id)][str(user.id)] = []
-				return await ctx.send("This user has no warnings!")
+	# 		if not str(ctx.guild.id) in warns:
+	# 			warns[str(ctx.guild.id)] = {}
 
-			try:
-				del warns[str(ctx.guild.id)][str(user.id)][warnId - 1]
-			except:
-				return await ctx.send("Invalid warning ID given, please check the ID and try again.")
-			else:
-				await ctx.send(f"Warn `{warnId}` has been removed.")
-				with open('./warns.json', 'w') as f: 
-					json.dump(warns, f, indent=4)
+	# 		if not str(user.id) in warns[str(ctx.guild.id)].keys():
+	# 			warns[str(ctx.guild.id)][str(user.id)] = []
+	# 			return await ctx.send("This user has no warnings!")
+
+	# 		try:
+	# 			del warns[str(ctx.guild.id)][str(user.id)][warnId - 1]
+	# 		except:
+	# 			return await ctx.send("Invalid warning ID given, please check the ID and try again.")
+	# 		else:
+	# 			await ctx.send(f"Warn `{warnId}` has been removed.")
+	# 			# with open('./warns.json', 'w') as f: 
+	# 			# 	json.dump(warns, f, indent=4)
 	
 	@commands.command(Administrator=True, aliases=['warnings'])
 	async def warns(self, ctx, user:discord.User): 
-		with open('./warns.json', 'r') as f:
-			warns = json.load(f)
+		warns = Database.find('warns', {'guild_id': ctx.guild.id})
 
-			if not str(ctx.guild.id) in warns:
-				await ctx.send("There are no warnings for this user.")
-				return
+		if not warns:
+			warns = {
+				'guild_id': ctx.guild.id,
+				'warn_data': {}
+			}
+			result = Database.insert('warns', warns)
+			warns = Database.find('warns', {'_id':result.inserted_id})
+			return await ctx.send("There are no warnings for this user.")
 
-			if not str(user.id) in warns[str(ctx.guild.id)]:
-				await ctx.send("This user has no warnings.")
-				return
+		if not str(user.id) in warns['warn_data'].keys():
+			warns['warn_data'][str(user.id)] = []
+			return await ctx.send("There are no warnings for this user.")
 
-			userwarnlist = warns[str(ctx.guild.id)][str(user.id)]
-			numWarns = 0
-			
-			embed=discord.Embed(title=f"Warns", color=0x06c258)
-			embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
+		userwarnlist = warns['warn_data'][str(user.id)]
+		numWarns = 0
+		
+		embed=discord.Embed(title=f"Warns", color=0x06c258)
+		embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
 
-			for userwarn in userwarnlist:
-				if numWarns != 25:
-					numWarns += 1 
-					embed.add_field(name="\uFEFF", value=str(numWarns) + '. ' + userwarn , inline=False)
-			await ctx.send(embed=embed)
+		for userwarndata in userwarnlist:
+			if numWarns != 25:
+				numWarns += 1 
+
+				warner = await self.bot.fetch_user(userwarndata['author_id'])
+				if warner is not None: 
+					warner = str(warner.name +'#'+ warner.discriminator)
+				else: 
+					warner = userwarndata['author_id']
+
+				embed.add_field(name=str(numWarns) + '. ' + userwarndata['reason'], value=f"Warned by: {warner}", inline=False)
+		await ctx.send(embed=embed)
 
 def setup(bot):
 	bot.add_cog(warning(bot))

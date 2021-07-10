@@ -10,13 +10,13 @@ class info(commands.Cog):
 
 
 		
-	@commands.command()
+	@commands.command(aliases=['ping', 'pong', 'i', 'p'] )
 	async def info(self, ctx):
 		pid = os.getpid()
 	
 		python_process = psutil.Process(pid)
 
-		embed=discord.Embed(title="__**Info**__", color=0x53e3d1)
+		embed=discord.Embed(title="__**Info**__", color=0x06c258)
 		embed.add_field(name="Current Guilds:", value=f"Currently in {len(self.bot.guilds)} servers!", inline=False)
 		embed.add_field(name="Latency:", value=f"{round(self.bot.latency * 1000)}ms", inline=True)
 		embed.add_field(name="CPU Usage:", value=f"{psutil.cpu_percent()}%", inline=False)
