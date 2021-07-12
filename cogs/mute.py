@@ -29,10 +29,14 @@ class MuteCog(commands.Cog):
 
 	@commands.command()
 	@commands.has_permissions(manage_roles=True)
-	async def mute(self, ctx, member:discord.Member, *, time:TimeConverter = None, reason=None):
+	async def mute(self, ctx, member:discord.Member, time:TimeConverter = None, *,reason=None):
 		role = discord.utils.get(ctx.guild.roles, name="Muted")
 		await member.add_roles(role)
-		await ctx.send((f"Muted {member} for {time}s for: {reason}" if time else "Muted {}").format(member, time))
+		#await ctx.send((f"Muted {member} for {time}s for: {reason}" if time else "Muted {}").format(member, time))
+		embed=discord.Embed(description=f"{member} Muted for: {time}s reason: {reason}" if time else "Muted {}",color=0x06c258)
+		embed.set_author(name=member.name +'#'+ member.discriminator, icon_url=member.avatar_url)
+		await ctx.send(embed=embed)
+
 		if time:
 			await asyncio.sleep(time)
 			await member.remove_roles(role)
@@ -52,7 +56,11 @@ class MuteCog(commands.Cog):
 	async def unmute(self, ctx, member:discord.Member):
 		role = discord.utils.get(ctx.guild.roles, name="Muted")
 		await member.remove_roles(role)
-		await ctx.send(f"{member} was unmuted")
+		embed=discord.Embed(description=f"{member} was unmuted",color=0x06c258)
+		embed.set_author(name=member.name +'#'+ member.discriminator, icon_url=member.avatar_url)
+		await ctx.send(embed=embed)
+
+		#await ctx.send(f"{member} was unmuted")
 
 def setup(bot):
 	bot.add_cog(MuteCog(bot))

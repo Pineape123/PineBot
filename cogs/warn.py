@@ -46,7 +46,7 @@ class warning(commands.Cog):
 		embed.set_author(name=user.name +'#'+ user.discriminator, icon_url=user.avatar_url)
 		await ctx.send(embed=embed)
 
-	@commands.command(Administrator=True, aliases=['dw'] )
+	@commands.command(Administrator=True, aliases=['dw', 'removewarn', 'deletewarn'] )
 	async def delwarn(self, ctx, user:discord.User, warnId:int):
 		warns = Database.find('warns', {'guild_id': ctx.guild.id})
 
