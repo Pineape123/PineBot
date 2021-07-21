@@ -23,7 +23,7 @@ class TimeConverter(commands.Converter):
 				raise commands.BadArgument("{} is not a number!".format(v))
 		return time
 
-class MuteCog(commands.Cog):
+class mute(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
@@ -63,4 +63,4 @@ class MuteCog(commands.Cog):
 		#await ctx.send(f"{member} was unmuted")
 
 def setup(bot):
-	bot.add_cog(MuteCog(bot))
+	bot.add_cog(mute(bot))

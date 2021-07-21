@@ -6,7 +6,7 @@ class blacklist(commands.Cog):
 		self.bot = bot
 
 	@commands.Cog.listener()
-	async def on_message(message):
+	async def on_message(self, message):
 		pass
 
 	@commands.command(Adminstrator=True, aliases=['vbl'])

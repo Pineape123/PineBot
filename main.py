@@ -5,6 +5,7 @@ from db import Database
 # db.cool()
 Database.init()
 
+
 def get_prefix(bot, message): 
 	with open('prefixes.json', 'r') as f:
 		prefixes = json.load(f) 
@@ -60,5 +61,20 @@ async def unload(ctx, extension):
 	bot.unload_extension(f'cogs.{extension}') 
 	await ctx.send(f'Unloaded "{extension}".')
 	print(f'Unloaded "{extension}".')
-################333
+
+
+################
+for FileName in os.listdir('./cogs'):
+	if FileName.endswith(".py"):
+		bot.load_extension(f'cogs.{FileName[:-3]}')
+		print(FileName)
+
+@bot.command()
+async def listcogs(ctx):
+	embed=discord.Embed(title="Loaded Cogs", color=0x06c258)
+	embed.set_footer(text="PineBot")
+	for cogname in bot.cogs.keys():
+		embed.add_field(name=f'{str.capitalize(cogname)}:', value=f':white_check_mark: {cogname}')
+	await ctx.send(embed=embed)
+	
 bot.run(TOKEN)
