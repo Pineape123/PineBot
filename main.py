@@ -2,14 +2,21 @@ import discord
 from discord.ext import commands
 import os, json
 from db import Database
-# db.cool()
+
 Database.init()
 
+prefixstructure = {
+	'_id': "jsdafhadsjkfhsdasfgjjd", # Internal MONGODB
+	'guild_id': 23984237842,
+	'prefix': "!"
+}
 
 def get_prefix(bot, message): 
-	with open('prefixes.json', 'r') as f:
-		prefixes = json.load(f) 
-		return prefixes[str(message.guild.id)]
+	prefixes = Database.find('prefixes', {'guild_id': message.guild.id})
+	return prefixes['prefix'] or '!'
+	# with open('prefixes.json', 'r') as f:
+	# 	prefixes = json.load(f) 
+	# 	return prefixes[str(message.guild.id)]
 
 bot = commands.AutoShardedBot(command_prefix = get_prefix, shard_count=1, case_insensitive=True, help_command=None)
 #########################
@@ -21,34 +28,46 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 ##########################
 @bot.event
 async def on_guild_join(guild):
-    with open('prefixes.json', 'r') as f: 
-        prefixes = json.load(f) 
+	Database.insert('prefixes', {'guild_id': guild.id, 'prefix': "!"})
+    # with open('prefixes.json', 'r') as f: 
+    #     prefixes = json.load(f) 
 
-    prefixes[str(guild.id)] = '!'
+    # prefixes[str(guild.id)] = '!'
 
-    with open('prefixes.json', 'w') as f: 
-        json.dump(prefixes, f, indent=4)
+    # with open('prefixes.json', 'w') as f: 
+    #     json.dump(prefixes, f, indent=4)
 
 @bot.event
-async def on_guild_remove(guild): 
-    with open('prefixes.json', 'r') as f:
-        prefixes = json.load(f)
+async def on_guild_remove(guild):
+	prefixes = Database.delete('prefixes', {'guild_id': guild.id})
 
-    prefixes.pop(str(guild.id)) 
+    # with open('prefixes.json', 'r') as f:
+    #     prefixes = json.load(f)
 
-    with open('prefixes.json', 'w') as f: 
-        json.dump(prefixes, f, indent=4)
+    # prefixes.pop(str(guild.id)) 
+
+    # with open('prefixes.json', 'w') as f: 
+    #     json.dump(prefixes, f, indent=4)
 
 @bot.command(Administrator=True)
 async def changeprefix(ctx, prefix): 
-	with open('prefixes.json', 'r') as f:
-		prefixes = json.load(f)
+	prefixes = Database.find('prefixes', {'guild_id': ctx.guild.id})
 
-		prefixes[str(ctx.guild.id)] = prefix
+	if not prefixes:
+		Database.insert('prefixes', {'guild_id': ctx.guild.id, 'prefix': "!"})
+		prefixes = Database.find('prefixes', {'guild_id': ctx.guild.id})
 
-		with open('prefixes.json', 'w') as f: 
-			json.dump(prefixes, f, indent=4)
-			await ctx.send(f'Prefix changed to: {prefix}.') 
+	prefixes['prefix'] = prefix
+
+	Database.update('prefixes', {'guild_id': ctx.guild.id}, {'$set': {'prefix': prefixes['prefix']}})
+	# with open('prefixes.json', 'r') as f:
+	# 	prefixes = json.load(f)
+
+	# 	prefixes[str(ctx.guild.id)] = prefix
+
+	# 	with open('prefixes.json', 'w') as f: 
+	# 		json.dump(prefixes, f, indent=4)
+	# 		await ctx.send(f'Prefix changed to: {prefix}.') 
 
 @bot.command(aliases=['lo'])
 async def load(ctx, extension):
