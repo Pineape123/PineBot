@@ -17,7 +17,7 @@ class blacklist(commands.Cog):
 			if not str(ctx.guild.id) in blacklist:
 				return await ctx.send("The blacklist is empty.")
 
-			blstring = "\n".join(blacklist)
+			blstring = "\n".join(blacklist[str(ctx.guild.id)])
 
 			await ctx.send(f"The blacklist contains: {blstring}")
 
