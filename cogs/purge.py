@@ -11,7 +11,7 @@ class purge(commands.Cog):
 	@commands.cooldown(1, 5, type=commands.BucketType.guild)
 	async def purge(self, ctx, clean: int):
 		await ctx.channel.purge(limit=clean+1)
-		embed=discord.Embed(title="Successfully Purged!", description=f'{ctx.author.mention} Cleared {clean} messages!', color=0x80ff00)
+		embed=discord.Embed(title="Successfully Purged!", description=f'{ctx.author.mention} Cleared {clean} messages!', color=0x06c258)
 		await ctx.send(embed=embed, delete_after=5.0)
 	@purge.error
 	async def clear_error(self, ctx, error):
