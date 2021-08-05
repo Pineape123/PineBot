@@ -1,5 +1,5 @@
-import discord, json
 from discord.ext import commands
+from db import Database
 
 class blacklist(commands.Cog):
 	def __init__(self, bot):
@@ -11,51 +11,65 @@ class blacklist(commands.Cog):
 
 	@commands.command(Adminstrator=True, aliases=['vbl'])
 	async def viewBlacklist(self, ctx):
-		with open('./blacklist.json', 'r') as f:
-			blacklist = json.load(f)
+		blacklist = Database.find('blacklists', {'guild_id': ctx.guild.id})
 
-			if not str(ctx.guild.id) in blacklist:
-				return await ctx.send("The blacklist is empty.")
+		if not blacklist:
+			blacklist = {
+				"guild_id": ctx.guild.id,
+				"blacklist_data": []
+			}
+			result = Database.insert('blacklists', blacklist)
+			blacklist = Database.find("blacklists", {"_id":result.inserted_id})
 
-			blstring = "\n".join(blacklist[str(ctx.guild.id)])
+		if not blacklist["blacklist_data"]:
+			return await ctx.send("The blacklist is empty.")
 
-			await ctx.send(f"The blacklist contains: {blstring}")
+		blstring = "\n- ".join(blacklist["blacklist_data"])
+
+		await ctx.send(f"The blacklist contains:\n{blstring}")
 
 	@commands.command(Adminstrator=True, aliases=['bl'])
 	async def blacklist(self, ctx, word):
-		with open('./blacklist.json', 'r') as f:
-			blacklist = json.load(f)
+		blacklist = Database.find("blacklists", {"guild_id": ctx.guild.id})
 
-			if not str(ctx.guild.id) in blacklist:
-				blacklist[str(ctx.guild.id)] = []
+		if not blacklist:
+			blacklist = {
+				"guild_id": ctx.guild.id,
+				"blacklist_data": []
+			}
+			result = Database.insert('blacklists', blacklist)
+			blacklist = Database.find("blacklists", {"_id":result.inserted_id})
 
-			if word in blacklist[str(ctx.guild.id)]:
-				return await ctx.send(f"Dw, `{word}` is already in the blacklist!")
+		if word in blacklist["blacklist_data"]:
+			return await ctx.send(f"`{word}`` is already in the blacklist!")
 
-			blacklist[str(ctx.guild.id)].append(word)
+		blacklist["blacklist_data"].append(word)
 
-			with open('./blacklist.json', 'w') as f:
-				json.dump(blacklist, f, indent=4)
-				await ctx.send(f'`{word}`` has been added to the blacklist.')
+		Database.update("blacklists", {"guild_id": ctx.guild.id}, {"$set": {"blacklist_data": blacklist["blacklist_data"]}})
+		await ctx.send(f"`{word}` has been added from the blacklist.")
 
 	@commands.command(Adminstrator=True, aliases=['unbl', 'wl', 'unblacklist'])
 	async def whitelist(self, ctx, word):
-		with open('./blacklist.json', 'r') as f:
-			blacklist = json.load(f)
+		blacklist = Database.find("blacklists", {"guild_id": ctx.guild.id})
 
-			if not str(ctx.guild.id) in blacklist:
-				blacklist[str(ctx.guild.id)] = []
+		if not blacklist:
+			blacklist = {
+				"guild_id": ctx.guild.id,
+				"blacklist_data": []
+			}
+			result = Database.insert('blacklists', blacklist)
+			blacklist = Database.find("blacklists", {"_id":result.inserted_id})
 
-			if not word in blacklist[str(ctx.guild.id)]:
-				return await ctx.send(f"`{word}` is not in the blacklist!")
+		if not word in blacklist["blacklist_data"]:
+			return await ctx.send(f"`{word}` is not in the blacklist!")
 
-			try:
-				blacklist[str(ctx.guild.id)].remove(word)
-			except:
-				await ctx.send("We're sorry but something went wrong and we weren't able to remove the word from the blacklist. Please try again or contact the owner of the bot.")
-			else:
-				with open('./blacklist.json', 'w') as f:
-					json.dump(blacklist, f, indent=4)
-					await ctx.send(f'`{word}`` has been removed from the blacklist.')
+		try:
+			blacklist["blacklist_data"].remove(word)
+		except:
+			await ctx.send("Something went wrong!")
+		else:
+			Database.update("blacklists", {"guild_id": ctx.guild.id}, {"$set": {"blacklist_data": blacklist["blacklist_data"]}})
+			await ctx.send(f"`{word}` has been removed from the blacklist.")
+
 def setup(bot):
 	bot.add_cog(blacklist(bot))
