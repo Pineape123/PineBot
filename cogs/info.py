@@ -1,31 +1,39 @@
-import discord
+import datetime, discord, math, psutil
 from discord.ext import commands
 import os
-import psutil
-import math
-from datetime import datetime, time as datetime_time, timedelta
-class info(commands.Cog):
-	def __init__(self, bot):
-		self.bot = bot
+class info(commands.Cog, name = "Random"):
+
+	def __init__(self, client):
+		self.client = client
+		self.start_time = datetime.datetime.now()
+
+	@commands.command(aliases = ["ping", "statistics", "info"])
+	@commands.cooldown(1, 5, commands.BucketType.user)
+	async def stats(self, ctx):
+	
+
+		message = await ctx.send("Gathering stats...")
+		
+		cpu = psutil.cpu_percent(interval = 1)
+		memory = psutil.virtual_memory()
+		latency = self.client.latency
+
+		current_time = datetime.datetime.now()
+		uptime = (current_time - self.start_time).total_seconds()
+
+		embed = discord.Embed(title = "Stats", colour= 0x06c258)
+
+		embed.set_author(name = self.client.user.name, icon_url = self.client.user.avatar_url)
+		embed.add_field(name = "Latency", inline="false", value = f"{math.floor(latency * 1000)} ms")
+		embed.add_field(name = "Total Servers", inline="false", value = str(len(self.client.guilds)))
+		embed.add_field(name = "CPU Usage", inline="false",  value = f"{round(cpu)}%")
+		embed.add_field(name = "Memory Usage", inline="false", value = f"{round((memory.total - memory.available) / math.pow(10, 9), 2)}GB / {round(memory.total / math.pow(10, 9), 2)}GB")
+		embed.add_field(name = "Uptime", inline="false", value = f"{math.floor(uptime / 86400)} days, {math.floor(uptime % 86400 / 3600)} hours, {math.floor(uptime % 3600 / 60)} minutes")
+
+		embed.set_footer(text="PineBot")
+		await message.edit(content = None, embed = embed)
 
 
 		
-	@commands.command(aliases=['ping', 'pong', 'i', 'p'] )
-	async def info(self, ctx):
-		pid = os.getpid()
-	
-		python_process = psutil.Process(pid)
-
-		embed=discord.Embed(title="__**Info**__", color=0x06c258)
-		embed.add_field(name="Current Guilds:", value=f"Currently in {len(self.bot.guilds)} servers!", inline=False)
-		embed.add_field(name="Latency:", value=f"{round(self.bot.latency * 1000)}ms", inline=True)
-		embed.add_field(name="CPU Usage:", value=f"{psutil.cpu_percent()}%", inline=False)
-		embed.add_field(name="Memory Usage:", value=f"{str(round(psutil.virtual_memory().available*  0.000000001, 2))} / {str(round(psutil.virtual_memory().total *0.000000001, 2))} GB", inline=False)
-		embed.add_field(name="Shards Online:", value=f"1/1", inline=False)
-
-
-		embed.set_footer(text="PineBot")
-		await ctx.send(embed=embed)
-
 def setup(bot):
 	bot.add_cog(info(bot))

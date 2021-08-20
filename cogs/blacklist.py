@@ -68,7 +68,7 @@ class blacklist(commands.Cog):
 		blacklist["blacklist_data"].append(word)
 
 		Database.update("blacklists", {"guild_id": ctx.guild.id}, {"$set": {"blacklist_data": blacklist["blacklist_data"]}})
-		await ctx.send(f"`{word}` has been added from the blacklist.")
+		await ctx.send(f"`{word}` has been added to the blacklist.")
 
 	@commands.command(aliases=['unbl', 'wl', 'unblacklist'])
 	@commands.has_permissions(administrator=True)
