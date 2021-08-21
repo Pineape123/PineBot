@@ -16,7 +16,7 @@ class blacklist(commands.Cog):
 
 		blacklist = Database.find('blacklists', {'guild_id': message.guild.id})
 		if blacklist:
-			filtered_message = re.sub("[^a-z]", "", message.content.lower())
+			filtered_message = re.sub("[(?i)[^a-z0-9]", "", message.content)
 			for word in blacklist["blacklist_data"]:
 				if re.search(word, filtered_message):
 					await message.delete()
