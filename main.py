@@ -21,7 +21,7 @@ bot = commands.AutoShardedBot(command_prefix = get_prefix, shard_count=1, case_i
 ###########################
 from dotenv import load_dotenv
 load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv("DISCORD_TOKEN_PROD")
 ##########################
 @bot.event
 async def on_guild_join(guild):
@@ -29,7 +29,7 @@ async def on_guild_join(guild):
 
 @bot.event
 async def on_guild_remove(guild):
-	prefixes = Database.delete('prefixes', {'guild_id': guild.id})
+	prefixes = Database.delete_one('prefixes', {'guild_id': guild.id})
 
 
 @bot.command(Administrator=True)
