@@ -12,8 +12,8 @@ prefixstructure = {
 }
 
 def get_prefix(bot, message): 
-	prefixes = Database.find('prefixes', {'guild_id': message.guild.id})
-	return prefixes['prefix'] or '!'
+	prefix = Database.get_guild(message.guild.id)["custom_prefix"]
+	return prefix or '!'
 
 bot = commands.AutoShardedBot(command_prefix = get_prefix, shard_count=1, case_insensitive=True, help_command=None)
 #########################
@@ -21,28 +21,16 @@ bot = commands.AutoShardedBot(command_prefix = get_prefix, shard_count=1, case_i
 ###########################
 from dotenv import load_dotenv
 load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN_PROD")
+TOKEN = os.getenv("DISCORD_TOKEN")
 ##########################
-@bot.event
-async def on_guild_join(guild):
-	Database.insert('prefixes', {'guild_id': guild.id, 'prefix': "!"})
-
-@bot.event
-async def on_guild_remove(guild):
-	prefixes = Database.delete_one('prefixes', {'guild_id': guild.id})
-
 
 @bot.command(Administrator=True)
 async def changeprefix(ctx, prefix): 
-	prefixes = Database.find('prefixes', {'guild_id': ctx.guild.id})
+	guild_data = Database.get_guild(ctx.guild.id)
 
-	if not prefixes:
-		Database.insert('prefixes', {'guild_id': ctx.guild.id, 'prefix': "!"})
-		prefixes = Database.find('prefixes', {'guild_id': ctx.guild.id})
+	guild_data["custom_prefix"] = prefix
 
-	prefixes['prefix'] = prefix
-
-	Database.update('prefixes', {'guild_id': ctx.guild.id}, {'$set': {'prefix': prefixes['prefix']}})
+	Database.set_guild(ctx.guild.id, guild_data)
 
 @bot.command(aliases=['lo'])
 async def load(ctx, extension):

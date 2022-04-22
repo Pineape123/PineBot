@@ -7,7 +7,7 @@ class onmessageping(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_message(self, message):
-		if message.content == "<@!851275243157979166>":
+		if message.content == "<@966917475486818344>":
 			prefix = await self.bot.get_prefix(message)
 			embed=discord.Embed(description=f"My current prefix is `{prefix}`\n\nTo change my prefix run `{prefix}changeprefix <prefix>`", color=0x06c258)
 			await message.reply(embed=embed)

@@ -1,43 +1,7 @@
-# import pymongo
-# import dotenv
-# import os 
-# from dotenv import load_dotenv
+import copy, os, pymongo
+from dotenv import load_dotenv
 
-# load_dotenv()
-
-# # userdb = mongo["UserData"]
-# # usercol = userdb["Data"]
-# # def cool():
-# # 	usercol.insert({
-# # 		"hello" : "bob"
-# # 	})
-
-# class Database(object):
-# 	MONGO_URI = os.getenv("MONGO_CON")
-# 	DB = None
-
-# 	@staticmethod
-# 	def init():
-# 		client = pymongo.MongoClient(Database.MONGO_URI)
-# 		Database.DB = client['UserData']
-# 		print("DATABASE INITIALIZED")
-
-# 	@staticmethod
-# 	def insert(collection, data):
-# 		return Database.DB[collection].insert_one(data)
-
-# 	@staticmethod
-# 	def find(collection, query):
-# 		return Database.DB[collection].find_one(query)
-
-# 	@staticmethod
-# 	def update(collection, query, data):
-# 		return Database.DB[collection].update_one(query, data)
-
-# 	@staticmethod
-# 	def delete(collection, query):
-# 		return Database.DB[collection].delete_one(query)
-
+load_dotenv()
 
 
 class VERSION1(object):
@@ -45,16 +9,17 @@ class VERSION1(object):
 		"GUILD_ID": 0,
 		"DATA_VERSION": 1,
 		"custom_prefix": None,
-		"auto_reactions": [],
-		"custom_roles": {},
-		"reaction_roles": [],
-		"admin_roles": [],
-		"mod_roles": [],
-		"log_channels": []
+		"word_blacklist": []
 		}
 
 	@staticmethod
-	def upgrade(version0_data):
+	def create(guild_id):
+		new_data = copy.deepcopy(VERSION1.BASE_STRUCTURE)
+		new_data["GUILD_ID"] = guild_id
+		return new_data
+	
+	@staticmethod
+	def upgrade(database, version0_data):
 		print("CANNOT UPGRADE FROM BASE VERSION.")
 		return version0_data
 
@@ -62,20 +27,14 @@ DATABASE_VERSIONS = {
 	1:VERSION1
 }
 
-
-
-import os, pymongo
-
 class Database(object):
-	if os.environ["DISCORD_BOT_ENV"] == "PROD":
-		URI = os.environ["MONGODB_URI_PROD"]
-		DB_NAME = os.environ["MONGODB_DB_PROD"]
-	elif os.environ["DISCORD_BOT_ENV"] == "DEV":
-		URI = os.environ["MONGODB_URI_DEV"]
-		DB_NAME = os.environ["MONGODB_DB_DEV"]
+	URI = os.getenv("MONGODB_URI")
+	DB_NAME = os.getenv("MONGODB_DB")
+	print(URI)
+	print(DB_NAME)
 
 	DB = None
-	SERVERS_COLLECTION = "servers"
+	GUILDS_COLLECTION = "servers"
 	LATEST_DATA_VERSION = 1
 
 	@staticmethod
@@ -88,8 +47,12 @@ class Database(object):
 		return Database.DB.list_collection_names()
 
 	@staticmethod
-	def insert(collection:str, data:dict = {}):
-		return Database.DB[collection].insert(data)
+	def insert_one(collection:str, data:dict = {}):
+		return Database.DB[collection].insert_one(data)
+
+	@staticmethod
+	def find(collection:str, query:dict = {}):
+		return Database.DB[collection].find(query) 
 
 	@staticmethod
 	def find_one(collection:str, query:dict = {}):
@@ -105,20 +68,19 @@ class Database(object):
 
 	@staticmethod
 	def get_guild(guild_id: int):
-		guild_data = Database.find_one(Database.SERVERS_COLLECTION, {"SERVER_ID":guild_id})
+		guild_data = Database.find_one(Database.GUILDS_COLLECTION, {"GUILD_ID":guild_id})
 
 		if guild_data is None:
-			guild_data = DATABASE_VERSIONS[Database.LATEST_DATA_VERSION].BASE_STRUCTURE
-			guild_data["SERVER_ID"] = guild_id
+			guild_data = DATABASE_VERSIONS[Database.LATEST_DATA_VERSION].create(guild_id)
 		else:
 			guild_data_version = guild_data["DATA_VERSION"]
 
 			while guild_data_version < Database.LATEST_DATA_VERSION:
-				guild_data = DATABASE_VERSIONS[guild_data_version + 1].upgrade(guild_data)
+				guild_data = DATABASE_VERSIONS[guild_data_version + 1].upgrade(Database, guild_data)
 				guild_data_version = guild_data["DATA_VERSION"]
 
 		return guild_data
 
 	@staticmethod
 	def set_guild(guild_id: int, new_guild_data: dict):
-		return Database.replace_one(Database.SERVERS_COLLECTION, {"SERVER_ID":guild_id}, new_guild_data, True)
+		return Database.replace_one(Database.GUILDS_COLLECTION, {"GUILD_ID":guild_id}, new_guild_data, True)

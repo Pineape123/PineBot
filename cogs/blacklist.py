@@ -12,12 +12,12 @@ class blacklist(commands.Cog):
 			return 
 
 		if not message.guild:
-			return 
+			return
 
-		blacklist = Database.find('blacklists', {'guild_id': message.guild.id})
+		blacklist = Database.get_guild(message.guild.id)["word_blacklist"]
 		if blacklist:
 			filtered_message = re.sub("(?i)[^a-z0-9]", "", message.content)
-			for word in blacklist["blacklist_data"]:
+			for word in blacklist:
 				if re.search(word, filtered_message):
 					await message.delete()
 					await message.author.send(f"The word `{word}` is banned! Try not to use it.")
@@ -26,17 +26,9 @@ class blacklist(commands.Cog):
 	@commands.command(aliases=['vbl', 'bannedwords'])
 	@commands.has_permissions(administrator=True)
 	async def viewBlacklist(self, ctx):
-		blacklist = Database.find('blacklists', {'guild_id': ctx.guild.id})
-
+		blacklist = Database.get_guild(ctx.guild.id)["word_blacklist"]
+		
 		if not blacklist:
-			blacklist = {
-				"guild_id": ctx.guild.id,
-				"blacklist_data": []
-			}
-			result = Database.insert('blacklists', blacklist)
-			blacklist = Database.find("blacklists", {"_id":result.inserted_id})
-
-		if not blacklist["blacklist_data"]:
 			return await ctx.send("The blacklist is empty.")
 
 		blstring = ""
@@ -51,49 +43,37 @@ class blacklist(commands.Cog):
 	@commands.command(aliases=['bl'])
 	@commands.has_permissions(administrator=True)
 	async def blacklist(self, ctx, word):
-		blacklist = Database.find("blacklists", {"guild_id": ctx.guild.id})
+		guild_data = Database.get_guild(ctx.guild.id)
+		blacklist = guild_data["word_blacklist"]
 		word = word.lower()
 
-		if not blacklist:
-			blacklist = {
-				"guild_id": ctx.guild.id,
-				"blacklist_data": []
-			}
-			result = Database.insert('blacklists', blacklist)
-			blacklist = Database.find("blacklists", {"_id":result.inserted_id})
 
-		if word in blacklist["blacklist_data"]:
+		if word in blacklist:
 			return await ctx.send(f"`{word}`` is already in the blacklist!")
 
-		blacklist["blacklist_data"].append(word)
+		blacklist.append(word)
 
-		Database.update("blacklists", {"guild_id": ctx.guild.id}, {"$set": {"blacklist_data": blacklist["blacklist_data"]}})
+		Database.set_guild(ctx.guild.id, guild_data)
 		await ctx.send(f"`{word}` has been added to the blacklist.")
 
 	@commands.command(aliases=['unbl', 'wl', 'unblacklist'])
 	@commands.has_permissions(administrator=True)
 	async def whitelist(self, ctx, word):
-		blacklist = Database.find("blacklists", {"guild_id": ctx.guild.id})
+		guild_data = Database.get_guild(ctx.guild.id)
+		blacklist = guild_data["word_blacklist"]
 		word = word.lower()
 
-		if not blacklist:
-			blacklist = {
-				"guild_id": ctx.guild.id,
-				"blacklist_data": []
-			}
-			result = Database.insert('blacklists', blacklist)
-			blacklist = Database.find("blacklists", {"_id":result.inserted_id})
-
-		if not word in blacklist["blacklist_data"]:
+		if not word in blacklist:
 			return await ctx.send(f"`{word}` is not in the blacklist!")
 
 		try:
-			blacklist["blacklist_data"].remove(word)
+			blacklist.remove(word)
 		except:
 			await ctx.send("Something went wrong!")
 		else:
-			Database.update("blacklists", {"guild_id": ctx.guild.id}, {"$set": {"blacklist_data": blacklist["blacklist_data"]}})
+			Database.set_guild(ctx.guild.id, guild_data)
 			embed=discord.Embed(description=f"`{word}` has been removed from the blacklist.", color=0x06c258)
 			await ctx.send(embed=embed)
+
 def setup(bot):
 	bot.add_cog(blacklist(bot))
