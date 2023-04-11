@@ -14,7 +14,7 @@ class blacklist(commands.Cog):
 		if not message.guild:
 			return
 
-		blacklist = Database.get_guild(message.guild.id)["word_blacklist"]
+		blacklist = (await Database.get_guild(message.guild.id))["word_blacklist"]
 		if blacklist:
 			filtered_message = re.sub("(?i)[^a-z0-9]", "", message.content)
 			for word in blacklist:
@@ -26,14 +26,14 @@ class blacklist(commands.Cog):
 	@commands.command(aliases=['vbl', 'bannedwords'])
 	@commands.has_permissions(administrator=True)
 	async def viewBlacklist(self, ctx):
-		blacklist = Database.get_guild(ctx.guild.id)["word_blacklist"]
+		blacklist = (await Database.get_guild(ctx.guild.id))["word_blacklist"]
 		
 		if not blacklist:
 			return await ctx.send("The blacklist is empty.")
 
 		blstring = ""
 
-		for word in blacklist["blacklist_data"]:
+		for word in blacklist:
 			blstring = blstring + (f"\n- `{word}`")
 		
 		embed=discord.Embed(title="Banned Words", description=f"The blacklist contains:{blstring}", color=0x06c258)
@@ -43,7 +43,7 @@ class blacklist(commands.Cog):
 	@commands.command(aliases=['bl'])
 	@commands.has_permissions(administrator=True)
 	async def blacklist(self, ctx, word):
-		guild_data = Database.get_guild(ctx.guild.id)
+		guild_data = await Database.get_guild(ctx.guild.id)
 		blacklist = guild_data["word_blacklist"]
 		word = word.lower()
 
@@ -53,13 +53,13 @@ class blacklist(commands.Cog):
 
 		blacklist.append(word)
 
-		Database.set_guild(ctx.guild.id, guild_data)
+		await Database.set_guild(ctx.guild.id, guild_data)
 		await ctx.send(f"`{word}` has been added to the blacklist.")
 
 	@commands.command(aliases=['unbl', 'wl', 'unblacklist'])
 	@commands.has_permissions(administrator=True)
 	async def whitelist(self, ctx, word):
-		guild_data = Database.get_guild(ctx.guild.id)
+		guild_data = await Database.get_guild(ctx.guild.id)
 		blacklist = guild_data["word_blacklist"]
 		word = word.lower()
 
@@ -71,9 +71,9 @@ class blacklist(commands.Cog):
 		except:
 			await ctx.send("Something went wrong!")
 		else:
-			Database.set_guild(ctx.guild.id, guild_data)
+			await Database.set_guild(ctx.guild.id, guild_data)
 			embed=discord.Embed(description=f"`{word}` has been removed from the blacklist.", color=0x06c258)
 			await ctx.send(embed=embed)
 
-def setup(bot):
-	bot.add_cog(blacklist(bot))
+async def setup(bot: commands.Bot):
+	await bot.add_cog(blacklist(bot))

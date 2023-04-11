@@ -12,5 +12,5 @@ class flipcoin(commands.Cog):
 		await ctx.reply(x)
 		
 
-def setup(bot):
-	bot.add_cog(flipcoin(bot))
+async def setup(bot: commands.Bot):
+	await bot.add_cog(flipcoin(bot))

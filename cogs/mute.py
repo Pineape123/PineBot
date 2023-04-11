@@ -1,4 +1,5 @@
 import discord
+import datetime
 import asyncio
 import re
 from discord.ext import commands
@@ -29,17 +30,17 @@ class mute(commands.Cog):
 
 	@commands.command()
 	@commands.has_permissions(manage_roles=True)
-	async def mute(self, ctx, member:discord.Member, time:TimeConverter = None, *,reason=None):
-		role = discord.utils.get(ctx.guild.roles, name="Muted")
-		await member.add_roles(role)
-		#await ctx.send((f"Muted {member} for {time}s for: {reason}" if time else "Muted {}").format(member, time))
-		embed=discord.Embed(description=f"{member} Muted for: {time}s reason: {reason}" if time else "Muted {}",color=0x06c258)
-		embed.set_author(name=member.name +'#'+ member.discriminator, icon_url=member.avatar_url)
+	async def mute(self, ctx: commands.Context, member:discord.Member, time:int = None, *,reason=None):
+		timeout_td = datetime.timedelta(seconds=time if time else 900)
+		await member.timeout(
+			timeout_td,
+			reason=f"From {ctx.author.display_name}: {reason}."
+			if reason
+			else f"{ctx.author.display_name} provided no reason.",
+		)
+		embed=discord.Embed(description=f"{member} Muted for: {time or 900}s reason: {reason}",color=0x06c258)
+		embed.set_author(name=member.name +'#'+ member.discriminator, icon_url=member.avatar.url)
 		await ctx.send(embed=embed)
-
-		if time:
-			await asyncio.sleep(time)
-			await member.remove_roles(role)
 
 	@mute.error
 	async def mute_error(self, ctx, error):
@@ -51,16 +52,17 @@ class mute(commands.Cog):
 			error = getattr(error, 'original', error)
 			print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
 			traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+	
 	@commands.command()
 	@commands.has_permissions(manage_roles=True)
 	async def unmute(self, ctx, member:discord.Member):
-		role = discord.utils.get(ctx.guild.roles, name="Muted")
-		await member.remove_roles(role)
+		await member.timeout(
+			None,
+			reason=f"From {ctx.author.display_name}: removed timeout."
+		)
 		embed=discord.Embed(description=f"{member} was unmuted",color=0x06c258)
-		embed.set_author(name=member.name +'#'+ member.discriminator, icon_url=member.avatar_url)
+		embed.set_author(name=member.name +'#'+ member.discriminator, icon_url=member.avatar.url)
 		await ctx.send(embed=embed)
 
-		#await ctx.send(f"{member} was unmuted")
-
-def setup(bot):
-	bot.add_cog(mute(bot))
+async def setup(bot: commands.Bot):
+	await bot.add_cog(mute(bot))

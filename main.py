@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import os, json
+import asyncio, os, json
 from db import Database
 
 Database.init()
@@ -11,11 +11,13 @@ prefixstructure = {
 	'prefix': "!"
 }
 
-def get_prefix(bot, message): 
-	prefix = Database.get_guild(message.guild.id)["custom_prefix"]
-	return prefix or '!'
+async def get_prefix(bot, message): 
+	if message.guild is None:
+		return commands.when_mentioned_or('!')(bot, message)
+	prefix = (await Database.get_guild(message.guild.id))["custom_prefix"]
+	return commands.when_mentioned_or(prefix or '!')(bot, message)
 
-bot = commands.AutoShardedBot(command_prefix = get_prefix, shard_count=1, case_insensitive=True, help_command=None)
+bot = commands.Bot(command_prefix = get_prefix, case_insensitive=True, intents=discord.Intents.all())
 #########################
 
 ###########################
@@ -26,30 +28,23 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 
 @bot.command(Administrator=True)
 async def changeprefix(ctx, prefix): 
-	guild_data = Database.get_guild(ctx.guild.id)
+	guild_data = await Database.get_guild(ctx.guild.id)
 
 	guild_data["custom_prefix"] = prefix
 
-	Database.set_guild(ctx.guild.id, guild_data)
+	await Database.set_guild(ctx.guild.id, guild_data)
 
 @bot.command(aliases=['lo'])
 async def load(ctx, extension):
-	bot.load_extension(f'cogs.{extension}') 
+	await bot.load_extension(f'cogs.{extension}') 
 	await ctx.send(f'Loaded "{extension}".')
 	print(f'Loaded "{extension}".')
 
 @bot.command(aliases=['un'])
 async def unload(ctx, extension):
-	bot.unload_extension(f'cogs.{extension}') 
+	await bot.unload_extension(f'cogs.{extension}') 
 	await ctx.send(f'Unloaded "{extension}".')
 	print(f'Unloaded "{extension}".')
-
-
-################
-for FileName in os.listdir('./cogs'):
-	if FileName.endswith(".py"):
-		bot.load_extension(f'cogs.{FileName[:-3]}')
-		print(FileName)
 
 @bot.command()
 async def listcogs(ctx):
@@ -59,4 +54,16 @@ async def listcogs(ctx):
 		embed.add_field(name=f'{str.capitalize(cogname)}:', value=f':white_check_mark: {cogname}')
 	await ctx.send(embed=embed)
 	
-bot.run(TOKEN)
+async def run_bot():
+	async with bot:
+		print("Loading Cogs...")
+		for fileName in os.listdir('./cogs'):
+			try:
+				await bot.load_extension(f'cogs.{fileName[:-3]}')
+			except Exception:
+				print(f"Failed to load {fileName}")
+
+		print("Starting Bot...")
+		await bot.start(TOKEN)
+
+asyncio.run(run_bot())

@@ -12,5 +12,5 @@ class bane(commands.Cog):
 		embed=discord.Embed(description=f"{user} was bannned!", color=0xff0000)
 		await ctx.send(embed=embed)
 
-def setup(bot):
-	bot.add_cog(bane(bot))
+async def setup(bot: commands.Bot):
+	await bot.add_cog(bane(bot))
