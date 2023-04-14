@@ -46,6 +46,13 @@ async def unload(ctx, extension):
 	await ctx.send(f'Unloaded "{extension}".')
 	print(f'Unloaded "{extension}".')
 
+@bot.command(aliases=['re'])
+async def reload(ctx, extension):
+	await bot.unload_extension(f'cogs.{extension}') 
+	await bot.load_extension(f'cogs.{extension}') 
+	await ctx.send(f'Reloaded "{extension}".')
+	print(f'Reloaded "{extension}".')
+
 @bot.command()
 async def listcogs(ctx):
 	embed=discord.Embed(title="Loaded Cogs", color=0x06c258)
