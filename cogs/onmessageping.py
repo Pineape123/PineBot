@@ -6,6 +6,10 @@ class onmessageping(commands.Cog):
 		self.bot = bot
 
 	@commands.Cog.listener()
+	async def on_ready(self):
+		print("Connected!")
+
+	@commands.Cog.listener()
 	async def on_message(self, message: discord.Message):
 		if message.content.startswith(self.bot.user.mention):
 			prefixes = await self.bot.get_prefix(message)

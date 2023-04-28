@@ -1,6 +1,7 @@
 import datetime, discord, math, psutil
 from discord.ext import commands
 import os
+from discord import app_commands
 class info(commands.Cog, name = "Random"):
 
 	def __init__(self, client: commands.Bot):

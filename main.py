@@ -5,12 +5,6 @@ from db import Database
 
 Database.init()
 
-prefixstructure = {
-	'_id': "jsdafhadsjkfhsdasfgjjd", # Internal MONGODB
-	'guild_id': 23984237842,
-	'prefix': "!"
-}
-
 async def get_prefix(bot, message): 
 	if message.guild is None:
 		return commands.when_mentioned_or('!')(bot, message)
@@ -26,7 +20,8 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 ##########################
 
-@bot.command(Administrator=True)
+@bot.command()
+@commands.has_permissions(administrator=True)
 async def changeprefix(ctx, prefix): 
 	guild_data = await Database.get_guild(ctx.guild.id)
 
@@ -35,18 +30,24 @@ async def changeprefix(ctx, prefix):
 	await Database.set_guild(ctx.guild.id, guild_data)
 
 @bot.command(aliases=['lo'])
+@commands.has_permissions(administrator=True)
+
 async def load(ctx, extension):
 	await bot.load_extension(f'cogs.{extension}') 
 	await ctx.send(f'Loaded "{extension}".')
 	print(f'Loaded "{extension}".')
 
 @bot.command(aliases=['un'])
+@commands.has_permissions(administrator=True)
+
 async def unload(ctx, extension):
 	await bot.unload_extension(f'cogs.{extension}') 
 	await ctx.send(f'Unloaded "{extension}".')
 	print(f'Unloaded "{extension}".')
 
 @bot.command(aliases=['re'])
+@commands.has_permissions(administrator=True)
+
 async def reload(ctx, extension):
 	await bot.unload_extension(f'cogs.{extension}') 
 	await bot.load_extension(f'cogs.{extension}') 

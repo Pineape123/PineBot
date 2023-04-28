@@ -11,10 +11,10 @@ class account(commands.Cog):
 		""""""
 		guild_data = await Database.get_guild(ctx.guild.id)
 		# If user is not in the list OR if user has 0 coins
-		if str(ctx.author.id) not in guild_data['coins'] or guild_data['coins'][str(ctx.author.id)] == 0:
+		if str(ctx.author.id) not in guild_data['coins'] or guild_data['coins'][str(ctx.author.id)] <= 0:
 			guild_data['coins'][str(ctx.author.id)] = 100
 			await Database.set_guild(ctx.guild.id, guild_data)
-			embed=discord.Embed(title = "Account Initialized", description=f"You Have: ${guild_data['coins'][str(ctx.author.id)]}",color=0x06c258)
+			embed=discord.Embed(title = "Account Initialized", description=f"You Have: {guild_data['coins'][str(ctx.author.id)]} Pinecones",color=0x06c258)
 			embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar and ctx.author.avatar.url or None)
 			await ctx.send(embed=embed)
 		else:
@@ -33,7 +33,7 @@ class account(commands.Cog):
 			await ctx.send(embed=embed)
 		else:
 			#await ctx.send(f"you have ${guild_data['coins'][str(ctx.author.id)]}")
-			embed=discord.Embed(title = "Wallet", description=f"You Have: ${guild_data['coins'][str(ctx.author.id)]}",color=0x06c258)
+			embed=discord.Embed(title = "Wallet", description=f"You Have: {guild_data['coins'][str(ctx.author.id)]} Pinecones",color=0x06c258)
 			embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar and ctx.author.avatar.url or None)
 			await ctx.send(embed=embed)
 
@@ -47,7 +47,7 @@ class account(commands.Cog):
 		printStr = ""
 		count = 1
 		for account in accounts:
-			printStr += f"{count}. <@{account[0]}>: ${account[1]}\n\n"
+			printStr += f"{count}. <@{account[0]}>: {account[1]} Pinecones\n\n"
 			count += 1
 		#await ctx.send(printStr[:-1])
 		embed=discord.Embed(title = "Leaderboard", description=f"{printStr[:-1]}", color=0x06c258)
